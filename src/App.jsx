@@ -1,3 +1,4 @@
+import { useState } from "react";
 import FormAdddFriend from "./components/FormAddFriend";
 import FormSplitBill from "./components/FormSplitBill";
 import FriendList from "./components/FriendList";
@@ -24,14 +25,56 @@ const initialFriends = [
 ];
 
 export default function App() {
+  const [friends, setFriends] = useState(initialFriends);
+  const [showAddFriend, setShowAddFriend] = useState(false);
+  const [selectedFriend, setSelectedFriend] = useState(null);
+
+  function handleAddFriends(friend) {
+    setFriends((friends) => [...friends, friend]);
+  }
+  function handleShowAddFriend() {
+    setShowAddFriend((showAddFriend) => !showAddFriend);
+    setSelectedFriend(null);
+  }
+
+  function handleSelectedFriend(friend) {
+    setSelectedFriend((selected) =>
+      selected?.id === friend.id ? null : friend
+    );
+
+    setShowAddFriend(false);
+  }
+  function handleSplitBill(value) {
+    setFriends(
+      friends.map((friend) => {
+        if (friend.id === selectedFriend?.id) {
+          return { ...friend, balance: friend.balance + value };
+        }
+
+        return friend;
+      })
+    );
+    setSelectedFriend(null);
+  }
   return (
     <div className="app">
       <div className="sidebar">
-        <FriendList friends={initialFriends} />
-        <FormAdddFriend />
-        <button className="button">Tambah Teman</button>
+        <FriendList
+          friends={friends}
+          onSelected={handleSelectedFriend}
+          selectedFriend={selectedFriend}
+        />
+        {showAddFriend && <FormAdddFriend onAddFriend={handleAddFriends} />}
+        <button className="button" onClick={handleShowAddFriend}>
+          {showAddFriend ? "Close" : "Tambah Teman"}
+        </button>
       </div>
-      <FormSplitBill />
+      {selectedFriend && (
+        <FormSplitBill
+          selectedFriend={selectedFriend}
+          onSplitBill={handleSplitBill}
+        />
+      )}
     </div>
   );
 }
